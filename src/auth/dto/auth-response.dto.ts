@@ -11,10 +11,11 @@ export class AuthResponseDto {
   tokenType: string;
 
   @ApiProperty({
-    example: 3600,
-    description: 'Token expiration time in seconds',
+    example: '7d',
+    description:
+      'Token expiration time (e.g., "7d", "24h", "3600s", or 3600 for seconds)',
   })
-  expiresIn: number;
+  expiresIn: string | number;
 
   @ApiProperty({
     example: '2025-08-25T12:00:00Z',

@@ -109,13 +109,30 @@ export class AuthService {
       role: user.role,
     };
 
-    const expiresIn = this.configService.get<number>('JWT_EXPIRES_IN') || 3600;
+    const expiresIn = this.configService.get<string>('JWT_EXPIRES_IN') || '7d';
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: `${expiresIn}s`,
+      expiresIn,
     });
 
+    // Calculate expiration date based on the string format
     const expirationDate = new Date();
-    expirationDate.setSeconds(expirationDate.getSeconds() + expiresIn);
+    if (expiresIn.endsWith('d')) {
+      const days = parseInt(expiresIn.slice(0, -1));
+      expirationDate.setDate(expirationDate.getDate() + days);
+    } else if (expiresIn.endsWith('h')) {
+      const hours = parseInt(expiresIn.slice(0, -1));
+      expirationDate.setHours(expirationDate.getHours() + hours);
+    } else if (expiresIn.endsWith('m')) {
+      const minutes = parseInt(expiresIn.slice(0, -1));
+      expirationDate.setMinutes(expirationDate.getMinutes() + minutes);
+    } else if (expiresIn.endsWith('s')) {
+      const seconds = parseInt(expiresIn.slice(0, -1));
+      expirationDate.setSeconds(expirationDate.getSeconds() + seconds);
+    } else {
+      // If it's just a number, treat as seconds
+      const seconds = parseInt(expiresIn);
+      expirationDate.setSeconds(expirationDate.getSeconds() + seconds);
+    }
 
     return {
       accessToken,

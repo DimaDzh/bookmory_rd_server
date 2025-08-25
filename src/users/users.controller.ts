@@ -35,23 +35,23 @@ interface UserPayload {
 
 @ApiTags('Users')
 @Controller('users')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Create a new user (Admin only)' })
+  @ApiOperation({ summary: 'Create a new user account' })
   @ApiResponse({
     status: 201,
     description: 'User successfully created',
     type: UserResponseDto,
   })
   @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Admin access required',
+    status: 400,
+    description: 'Validation errors',
   })
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @ApiResponse({
+    status: 409,
+    description: 'User with email or username already exists',
+  })
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
@@ -63,9 +63,17 @@ export class UsersController {
     description: 'List of users',
     type: [UserResponseDto],
   })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  @UseGuards(RolesGuard)
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin or Moderator access required',
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
   @Get()
   async findAll() {
     return this.usersService.findAll();
@@ -77,6 +85,12 @@ export class UsersController {
     description: 'Current user profile',
     type: UserResponseDto,
   })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('me')
   async getProfile(@GetUser() user: UserPayload) {
     return this.usersService.findById(user.id);
@@ -88,10 +102,18 @@ export class UsersController {
     description: 'User found',
     type: UserResponseDto,
   })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin or Moderator access required',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.usersService.findById(id);
@@ -103,6 +125,12 @@ export class UsersController {
     description: 'User profile updated',
     type: UserResponseDto,
   })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Patch('me')
   async updateProfile(
     @GetUser() user: UserPayload,
@@ -117,13 +145,18 @@ export class UsersController {
     description: 'User updated',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
   @ApiResponse({
     status: 403,
     description: 'Forbidden - Admin access required',
   })
-  @UseGuards(RolesGuard)
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
@@ -134,13 +167,18 @@ export class UsersController {
     status: 200,
     description: 'User deleted',
   })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
   @ApiResponse({
     status: 403,
     description: 'Forbidden - Admin access required',
   })
-  @UseGuards(RolesGuard)
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.usersService.remove(id);

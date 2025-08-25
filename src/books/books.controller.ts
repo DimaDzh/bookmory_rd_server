@@ -24,7 +24,11 @@ import {
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
-  @ApiOperation({ summary: 'Search for books using Google Books API' })
+  @ApiOperation({
+    summary: 'Search for books using Google Books API',
+    description:
+      'Search books from Google Books API. Use the volume ID from results to add books to your library.',
+  })
   @ApiQuery({
     name: 'q',
     description: 'Search query',
@@ -66,7 +70,11 @@ export class BooksController {
     return this.booksService.searchBooks(query, maxResults, startIndex);
   }
 
-  @ApiOperation({ summary: 'Get a specific book by ID' })
+  @ApiOperation({
+    summary: 'Get a specific book by Google Books ID',
+    description:
+      'Get book details from Google Books API. Use this to preview book before adding to library.',
+  })
   @ApiParam({
     name: 'id',
     description: 'Google Books volume ID',

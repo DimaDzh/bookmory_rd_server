@@ -135,10 +135,18 @@ export class AuthService {
     }
 
     return {
-      accessToken,
-      tokenType: 'Bearer',
-      expiresIn,
-      expiresAt: expirationDate.toISOString(),
+      access_token: accessToken,
+      token_type: 'Bearer',
+      expires_in: expiresIn,
+      expires_at: expirationDate.toISOString(),
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
     };
   }
 }

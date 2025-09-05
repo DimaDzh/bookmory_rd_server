@@ -13,7 +13,6 @@ export class UsersService {
 
     const user = await this.prisma.user.create({
       data: {
-        username: createUserDto.username,
         email: createUserDto.email,
         passwordHash: hashedPassword,
         firstName: createUserDto.firstName,
@@ -21,11 +20,9 @@ export class UsersService {
       },
       select: {
         id: true,
-        username: true,
         email: true,
         firstName: true,
         lastName: true,
-        avatar: true,
         isActive: true,
         role: true,
         createdAt: true,
@@ -40,11 +37,9 @@ export class UsersService {
     return this.prisma.user.findMany({
       select: {
         id: true,
-        username: true,
         email: true,
         firstName: true,
         lastName: true,
-        avatar: true,
         isActive: true,
         role: true,
         createdAt: true,
@@ -58,11 +53,9 @@ export class UsersService {
       where: { id },
       select: {
         id: true,
-        username: true,
         email: true,
         firstName: true,
         lastName: true,
-        avatar: true,
         isActive: true,
         role: true,
         createdAt: true,
@@ -83,24 +76,6 @@ export class UsersService {
     });
   }
 
-  async findByUsername(username: string) {
-    return this.prisma.user.findUnique({
-      where: { username },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        avatar: true,
-        isActive: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-  }
-
   async update(id: string, updateUserDto: UpdateUserDto) {
     await this.findById(id); // Validate user exists
 
@@ -118,11 +93,9 @@ export class UsersService {
       data: updateData,
       select: {
         id: true,
-        username: true,
         email: true,
         firstName: true,
         lastName: true,
-        avatar: true,
         isActive: true,
         role: true,
         createdAt: true,

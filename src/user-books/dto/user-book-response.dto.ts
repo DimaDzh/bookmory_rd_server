@@ -65,9 +65,6 @@ export class UserBookResponseDto {
   @ApiProperty({ example: 150 })
   currentPage: number;
 
-  @ApiProperty({ example: 4, minimum: 1, maximum: 5, required: false })
-  rating?: number;
-
   @ApiProperty({
     example: 'Great book! Really enjoying it.',
     required: false,
@@ -120,9 +117,6 @@ export class LibraryStatsDto {
 
   @ApiProperty({ example: 8, description: 'Favorite books' })
   favorites: number;
-
-  @ApiProperty({ example: 4.2, description: 'Average rating' })
-  averageRating: number;
 
   @ApiProperty({ example: 2450, description: 'Total pages read' })
   totalPagesRead: number;

@@ -75,7 +75,6 @@ export class UserBooksService {
             : null,
           genres: googleBook.volumeInfo.categories || [],
           metadata: googleBook as any,
-          addedById: userId,
         },
       });
     }
@@ -247,10 +246,6 @@ export class UserBooksService {
       }
     }
 
-    if (updateDto.rating !== undefined) {
-      updateData.rating = updateDto.rating;
-    }
-
     if (updateDto.review !== undefined) {
       updateData.review = updateDto.review;
     }
@@ -306,7 +301,7 @@ export class UserBooksService {
    * Get user's library statistics
    */
   async getLibraryStats(userId: string): Promise<LibraryStatsDto> {
-    const [totalBooks, statusCounts, favorites, averageRating, totalPagesRead] =
+    const [totalBooks, statusCounts, favorites, totalPagesRead] =
       await Promise.all([
         this.prisma.userBook.count({
           where: { userId },
@@ -322,15 +317,6 @@ export class UserBooksService {
           where: {
             userId,
             isFavorite: true,
-          },
-        }),
-        this.prisma.userBook.aggregate({
-          where: {
-            userId,
-            rating: { not: null },
-          },
-          _avg: {
-            rating: true,
           },
         }),
         this.prisma.userBook.aggregate({
@@ -357,7 +343,6 @@ export class UserBooksService {
       paused: statusMap['PAUSED'] || 0,
       didNotFinish: statusMap['DNF'] || 0,
       favorites,
-      averageRating: Number(averageRating._avg.rating?.toFixed(1)) || 0,
       totalPagesRead: totalPagesRead._sum.currentPage || 0,
     };
   }
@@ -377,7 +362,6 @@ export class UserBooksService {
       bookId: userBook.bookId,
       status: userBook.status,
       currentPage: userBook.currentPage,
-      rating: userBook.rating,
       review: userBook.review,
       isFavorite: userBook.isFavorite,
       startedAt: userBook.startedAt?.toISOString(),

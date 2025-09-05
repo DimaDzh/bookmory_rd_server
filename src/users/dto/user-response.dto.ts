@@ -6,9 +6,6 @@ export class UserResponseDto {
   id: string;
 
   @ApiProperty()
-  username: string;
-
-  @ApiProperty()
   email: string;
 
   @ApiProperty({ required: false })
@@ -16,9 +13,6 @@ export class UserResponseDto {
 
   @ApiProperty({ required: false })
   lastName?: string;
-
-  @ApiProperty({ required: false })
-  avatar?: string;
 
   @ApiProperty()
   isActive: boolean;

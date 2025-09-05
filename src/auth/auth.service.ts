@@ -28,13 +28,6 @@ export class AuthService {
       throw new ConflictException('User with this email already exists');
     }
 
-    const existingUserByUsername = await this.usersService.findByUsername(
-      createUserDto.username,
-    );
-    if (existingUserByUsername) {
-      throw new ConflictException('User with this username already exists');
-    }
-
     // Create user
     const user = await this.usersService.create(createUserDto);
 
@@ -67,7 +60,6 @@ export class AuthService {
     return this.generateToken({
       id: user.id,
       email: user.email,
-      username: user.username,
       role: user.role,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -97,7 +89,6 @@ export class AuthService {
   private generateToken(user: {
     id: string;
     email: string;
-    username: string;
     role: string;
     firstName?: string | null;
     lastName?: string | null;
@@ -105,7 +96,6 @@ export class AuthService {
     const payload = {
       sub: user.id,
       email: user.email,
-      username: user.username,
       role: user.role,
     };
 
@@ -142,7 +132,6 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,

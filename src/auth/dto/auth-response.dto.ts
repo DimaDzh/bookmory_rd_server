@@ -7,9 +7,6 @@ class UserDto {
   @ApiProperty({ example: 'user@example.com', description: 'User email' })
   email: string;
 
-  @ApiProperty({ example: 'johndoe', description: 'Username' })
-  username: string;
-
   @ApiProperty({ example: 'John', description: 'First name', required: false })
   firstName?: string | null;
 

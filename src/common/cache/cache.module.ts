@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { redisStore } from 'cache-manager-redis-yet';
+import { Keyv } from 'keyv';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
@@ -12,9 +13,12 @@ import { redisStore } from 'cache-manager-redis-yet';
           configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
 
         return {
-          store: redisStore,
-          url: redisUrl,
-          ttl: 300, // 5 minutes default TTL
+          store: () =>
+            new Keyv({
+              store: new KeyvRedis(redisUrl),
+              ttl: 300000, // 5 minutes default TTL (in milliseconds)
+            }),
+          ttl: 300, // 5 minutes default TTL (in seconds for cache-manager)
           max: 1000, // Maximum number of items in cache
         };
       },

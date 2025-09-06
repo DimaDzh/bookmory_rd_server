@@ -43,6 +43,27 @@ export class AuthController {
   @ApiResponse({
     status: 409,
     description: 'User with email or username already exists',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'User with this email already exists',
+        error: 'Conflict',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: [
+          'email must be an email',
+          'password must be longer than or equal to 6 characters',
+        ],
+        error: 'Bad Request',
+      },
+    },
   })
   @Post('register')
   async register(
@@ -60,6 +81,13 @@ export class AuthController {
   @ApiResponse({
     status: 401,
     description: 'Invalid credentials',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Invalid credentials',
+        error: 'Unauthorized',
+      },
+    },
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -76,7 +104,7 @@ export class AuthController {
     status: 401,
     description: 'Unauthorized',
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@GetUser() user: UserPayload) {
@@ -99,7 +127,7 @@ export class AuthController {
     status: 401,
     description: 'Token is invalid or expired',
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Get('validate')
   validateToken() {

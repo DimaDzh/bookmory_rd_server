@@ -3,7 +3,9 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Inject,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from '../database/prisma.service';
 import { GoogleBooksService } from '../integrations/google-books/google-books.service';
 import { AddBookToLibraryDto } from './dto/add-book-to-library.dto';
@@ -18,6 +20,7 @@ export class UserBooksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly googleBooksService: GoogleBooksService,
+    @Inject(CACHE_MANAGER) private cacheManager: any,
   ) {}
 
   /**
@@ -92,6 +95,9 @@ export class UserBooksService {
         book: true,
       },
     });
+
+    // Invalidate cache for this book
+    await this.invalidateBookCache(addBookDto.bookId);
 
     return this.mapToUserBookResponse(userBook);
   }
@@ -384,5 +390,24 @@ export class UserBooksService {
       },
       progressPercentage,
     };
+  }
+
+  /**
+   * Invalidate cache for book searches when library is modified
+   */
+  private async invalidateBookCache(bookId: string): Promise<void> {
+    try {
+      // Get all cache keys that might contain this book
+      // Note: This is a simplified approach. In production, you might want to use cache tags or patterns
+      const cacheKey = `google-books:volume:${bookId}`;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      await this.cacheManager.del(cacheKey);
+
+      // You could also implement more sophisticated cache invalidation
+      // by storing cache keys in a set or using cache tags
+    } catch (error) {
+      // Don't fail the operation if cache invalidation fails
+      console.warn('Cache invalidation failed:', error);
+    }
   }
 }

@@ -7,12 +7,14 @@ import { UsersModule } from './users/users.module';
 import { BooksModule } from './books/books.module';
 import { UserBooksModule } from './user-books/user-books.module';
 import { PrismaModule } from './database/prisma.module';
+import { RedisCacheModule } from './common/cache/cache.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    RedisCacheModule,
     AuthModule,
     UsersModule,
     BooksModule,

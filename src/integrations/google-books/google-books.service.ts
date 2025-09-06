@@ -1,4 +1,11 @@
-import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  Logger,
+  Inject,
+} from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import {
   GoogleBooksVolume,
@@ -12,7 +19,10 @@ export class GoogleBooksService {
   private readonly logger = new Logger(GoogleBooksService.name);
   private readonly config: GoogleBooksConfig;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: any,
+  ) {
     this.config = {
       baseUrl: 'https://www.googleapis.com/books/v1',
       apiKey: this.configService.get<string>('GOOGLE_BOOKS_API_KEY'),
@@ -35,12 +45,26 @@ export class GoogleBooksService {
   }
 
   /**
-   * Search for books using Google Books API
+   * Search for books using Google Books API with Redis caching
    */
   async searchBooks(
     params: GoogleBooksSearchParams,
   ): Promise<GoogleBooksSearchResponse> {
+    // Create cache key from search parameters
+    const cacheKey = `google-books:search:${JSON.stringify(params)}`;
+
     try {
+      // Try to get from cache first
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const cachedResult = (await this.cacheManager.get(cacheKey)) as
+        | GoogleBooksSearchResponse
+        | undefined;
+      if (cachedResult) {
+        this.logger.debug(`Cache hit for search: ${params.query}`);
+        return cachedResult;
+      }
+
+      this.logger.debug(`Cache miss for search: ${params.query}`);
       const url = this.buildSearchUrl(params);
       this.logger.debug(`Searching books with URL: ${url}`);
 
@@ -68,6 +92,11 @@ export class GoogleBooksService {
         `Successfully fetched ${data.totalItems} books, returned ${data.items?.length || 0} items`,
       );
 
+      // Cache the result for 5 minutes (300 seconds)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      await this.cacheManager.set(cacheKey, data, 300);
+      this.logger.debug(`Cached search result for: ${params.query}`);
+
       return data;
     } catch (error) {
       if (error instanceof HttpException) {
@@ -91,10 +120,24 @@ export class GoogleBooksService {
   }
 
   /**
-   * Get a specific book by its Google Books volume ID
+   * Get a specific book by its Google Books volume ID with Redis caching
    */
   async getBookById(volumeId: string): Promise<GoogleBooksVolume> {
+    // Create cache key for individual book
+    const cacheKey = `google-books:volume:${volumeId}`;
+
     try {
+      // Try to get from cache first
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const cachedResult = (await this.cacheManager.get(cacheKey)) as
+        | GoogleBooksVolume
+        | undefined;
+      if (cachedResult) {
+        this.logger.debug(`Cache hit for book: ${volumeId}`);
+        return cachedResult;
+      }
+
+      this.logger.debug(`Cache miss for book: ${volumeId}`);
       const url = this.buildVolumeUrl(volumeId);
       this.logger.debug(`Fetching book with ID: ${volumeId}`);
 
@@ -124,6 +167,11 @@ export class GoogleBooksService {
 
       const data = (await response.json()) as GoogleBooksVolume;
       this.logger.debug(`Successfully fetched book: ${data.volumeInfo.title}`);
+
+      // Cache the result for 10 minutes (600 seconds) - books change less frequently
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      await this.cacheManager.set(cacheKey, data, 600);
+      this.logger.debug(`Cached book result for: ${volumeId}`);
 
       return data;
     } catch (error) {

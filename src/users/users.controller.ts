@@ -73,7 +73,7 @@ export class UsersController {
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @Get()
   async findAll() {
     return this.usersService.findAll();
@@ -90,7 +90,7 @@ export class UsersController {
     description: 'Unauthorized - Authentication required',
   })
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @Get('me')
   async getProfile(@GetUser() user: UserPayload) {
     return this.usersService.findById(user.id);
@@ -113,7 +113,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.usersService.findById(id);
@@ -130,7 +130,7 @@ export class UsersController {
     description: 'Unauthorized - Authentication required',
   })
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @Patch('me')
   async updateProfile(
     @GetUser() user: UserPayload,
@@ -156,7 +156,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
@@ -178,7 +178,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT-auth')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.usersService.remove(id);

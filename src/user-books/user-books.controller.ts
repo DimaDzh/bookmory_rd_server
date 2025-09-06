@@ -10,7 +10,6 @@ import {
   UseGuards,
   ParseIntPipe,
   DefaultValuePipe,
-  ParseBoolPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -34,7 +33,7 @@ import {
 @ApiTags('user-books')
 @Controller('user-books')
 @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 export class UserBooksController {
   constructor(private readonly userBooksService: UserBooksService) {}
 
